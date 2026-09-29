@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GenyM — Твори без границ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://telegram.org/js/telegram-widget.js?22"></script>
+  <style>
+    body { background: linear-gradient(135deg, #0f0f1a, #1a1a2e); min-height: 100vh; }
+    .text-gradient { background: linear-gradient(90deg, #6366f1, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .card { background: rgba(30, 30, 50, 0.5); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 16px; transition: all 0.3s; }
+    .card:hover { border-color: rgba(99, 102, 241, 0.5); transform: translateY(-3px); }
+  </style>
+</head>
+<body class="text-white">
+  <div class="container mx-auto px-4 py-16 max-w-4xl text-center">
+    <h1 class="text-5xl font-bold mb-6">
+      <span class="text-gradient">GenyM</span>
+    </h1>
+    <p class="text-xl text-gray-400 mb-10">Генерация изображений, видео и музыки<br>без цензуры и ограничений</p>
+
+    <div id="auth-section" class="card p-8 max-w-md mx-auto">
+      <h2 class="text-xl font-semibold mb-4">Войти в личный кабинет</h2>
+      <p class="text-gray-400 mb-6">Чтобы увидеть свой баланс и результаты генераций</p>
+      
+      <script>
+        function onAuth(user) {
+          fetch('/api/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(user)
+          })
+          .then(r => r.json())
+          .then(data => {
+            if (data.ok) {
+              localStorage.setItem('userId', user.id);
+              window.location.href = 'cabinet.html';
+            } else alert('Ошибка входа');
+          });
+        }
+      </script>
+      
+      <telegram-login 
+        bot-name="genyMaster_bot" 
+        size="large" 
+        onauth="onAuth(user)"
+        data-radius="12">
+      </telegram-login>
+      
+      <p class="mt-4 text-sm text-gray-500">
+        Нет аккаунта? Напиши <a href="https://t.me/genyMaster_bot" target="_blank" class="text-cyan-400">@genyMaster_bot</a> в Telegram
+      </p>
+    </div>
+
+    <div class="mt-12 grid md:grid-cols-3 gap-6">
+      <div class="card p-6">
+        <h3 class="text-lg font-semibold mb-2">🖼 Картинки</h3>
+        <p class="text-gray-400 text-sm">от 5 баллов</p>
+      </div>
+      <div class="card p-6">
+        <h3 class="text-lg font-semibold mb-2">🎬 Видео</h3>
+        <p class="text-gray-400 text-sm">от 10 баллов</p>
+      </div>
+      <div class="card p-6">
+        <h3 class="text-lg font-semibold mb-2">🎵 Музыка</h3>
+        <p class="text-gray-400 text-sm">от 20 баллов</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

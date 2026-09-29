@@ -1,0 +1,13 @@
+{
+  "name": "genym-site",
+  "version": "1.0.0",
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "sql.js": "^1.10.3",
+    "dotenv": "^16.4.5"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}

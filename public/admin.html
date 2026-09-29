@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔐 Админ-панель — GenyM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: linear-gradient(135deg, #0f0f1a, #1a1a2e); min-height: 100vh; }
+    .card { background: rgba(30, 30, 50, 0.5); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 16px; }
+    input, textarea { background: rgba(0,0,0,0.3); border: 1px solid rgba(99,102,241,0.3); border-radius: 8px; padding: 12px; color: white; width: 100%; margin-bottom: 12px; }
+    button { cursor: pointer; transition: all 0.2s; }
+  </style>
+</head>
+<body class="text-white">
+  <div class="container mx-auto px-4 py-8 max-w-2xl">
+    <h1 class="text-2xl font-bold mb-6">🔐 Админ-панель GenyM</h1>
+    
+    <div class="card p-5 mb-6">
+      <label class="block mb-2 font-medium">Твой Telegram ID</label>
+      <input type="number" id="admin-id" placeholder="Например: 123456789">
+      <button id="auth-btn" class="bg-indigo-600 hover:bg-indigo-700 px-5 py-2 rounded-lg w-full">Войти в панель</button>
+    </div>
+
+    <div id="panel" class="hidden">
+      <!-- Изменить баланс -->
+      <div class="card p-5 mb-6">
+        <h3 class="font-semibold mb-4">💰 Изменить баланс пользователя</h3>
+        <input type="number" id="target-id" placeholder="Telegram ID пользователя">
+        <input type="number" id="new-balance" placeholder="Новое количество баллов">
+        <button id="update-balance" class="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg w-full">Обновить баланс</button>
+      </div>
+
+      <!-- Добавить результат -->
+      <div class="card p-5 mb-6">
+        <h3 class="font-semibold mb-4">📤 Добавить результат генерации</h3>
+        <input type="number" id="res-target-id" placeholder="Telegram ID пользователя">
+        <input type="text" id="res-model" placeholder="Модель (например: imagine18)">
+        <textarea id="res-desc" rows="3" placeholder="Описание генерации"></textarea>
+        <input type="url" id="res-url" placeholder="Ссылка на картинку/видео">
+        <button id="add-result" class="bg-indigo-600 hover:bg-indigo-700 px-5 py-2 rounded-lg w-full">Отправить пользователю</button>
+      </div>
+
+      <!-- Список пользователей -->
+      <div class="card p-5">
+        <h3 class="font-semibold mb-4">👥 Все пользователи</h3>
+        <div id="users-list" class="space-y-2">Загрузка...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let adminId = null;
+
+    document.getElementById('auth-btn').onclick = () => {
+      adminId = parseInt(document.getElementById('admin-id').value);
+      loadUsers();
+      document.getElementById('panel').classList.remove('hidden');
+    };
+
+    function loadUsers() {
+      fetch(`/api/admin/users?adminId=${adminId}`)
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById('users-list').innerHTML = data.users.map(u => `
+            <div class="p-3 bg-black/30 rounded-lg flex justify-between items-center">
+              <div>
+                <div class="font-medium">${u.first_name || '—'} ${u.last_name || ''}</div>
+                <div class="text-xs text-gray-400">ID: ${u.telegram_id} | @${u.username || '—'}</div>
+              </div>
+              <div class="text-cyan-400 font-bold">${u.balance} Б</div>
+            </div>
+          `).join('');
+        });
+    }
+
+    document.getElementById('update-balance').onclick = () => {
+      fetch('/api/admin/update-balance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adminId,
+          targetUserId: parseInt(document.getElementById('target-id').value),
+          newBalance: parseInt(document.getElementById('new-balance').value)
+        })
+      }).then(r => r.json()).then(d => {
+        alert(d.ok ? '✅ Баланс обновлён!' : '❌ Ошибка');
+        loadUsers();
+      });
+    };
+
+    document.getElementById('add-result').onclick = () => {
+      fetch('/api/admin/add-result', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adminId,
+          targetUserId: parseInt(document.getElementById('res-target-id').value),
+          model: document.getElementById('res-model').value,
+          description: document.getElementById('res-desc').value,
+          mediaUrl: document.getElementById('res-url').value
+        })
+      }).then(r => r.json()).then(d => {
+        alert(d.ok ? '✅ Отправлено пользователю!' : '❌ Ошибка');
+      });
+    };
+  </script>
+</body>
+</html>
